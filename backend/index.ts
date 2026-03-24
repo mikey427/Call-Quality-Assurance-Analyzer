@@ -5,7 +5,7 @@ import busboy from "busboy";
 import { createWriteStream, WriteStream } from "fs";
 import path from "path";
 import { toNodeHandler } from "better-auth/node";
-import { auth } from "./auth";
+import { auth } from "./lib/auth";
 
 const app = express();
 app.use(express.json());
