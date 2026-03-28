@@ -1,0 +1,68 @@
+{
+  "call_id": "string",
+  "analyzed_at": "2026-03-26T10:00:00Z",
+
+  "metadata": {
+    "agent_name": "string",
+    "call_label": "string",
+    "call_duration": "string",
+    "tags": ["string", "string"]
+  },
+
+  "summary": "string",
+
+  "upsides": ["string", "string"],
+  "downsides": ["string", "string"],
+
+  "confidence": {
+    "score": 0.85,
+    "concerns": ["string", "string"]
+  },
+
+  "scores": {
+    "professionalism": {
+      "score": 4,
+      "reasoning": "string",
+      "confidence": {
+        "score": 0.9,
+        "concerns": ["string"]
+      }
+    },
+    "call_management": {
+      "score": 3,
+      "reasoning": "string",
+      "confidence": {
+        "score": 0.7,
+        "concerns": ["string"]
+      }
+    },
+    "accuracy_and_completeness": {
+      "score": 5,
+      "reasoning": "string",
+      "confidence": {
+        "score": 0.5,
+        "concerns": ["string", "string"]
+      }
+    },
+    "caller_experience": {
+      "score": 4,
+      "reasoning": "string",
+      "confidence": {
+        "score": 0.85,
+        "concerns": ["string"]
+      }
+    },
+    "overall": 4
+  },
+
+  "turns": [
+    {
+      "timestamp": "0:03",
+      "speaker": "agent | caller",
+      "text": "string",
+      "phase": "pickup | call_management | message_taking | closing",
+      "flags": ["string"],
+      "note": "string"
+    }
+  ]
+}

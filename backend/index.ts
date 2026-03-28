@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
-import { agent } from "./ai/graph";
+import { agent } from "./lib/ai/graph";
 import { HumanMessage } from "@langchain/core/messages";
 import busboy from "busboy";
 import { createWriteStream, WriteStream } from "fs";
