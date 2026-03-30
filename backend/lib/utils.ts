@@ -1,13 +1,42 @@
-import { readFile } from "node:fs";
+import { clean } from "better-auth/client";
+import { readFile, readdir } from "node:fs/promises";
+import { join } from "node:path";
 
+export async function loadInstructionsFromFiles() {
+	const files = await readdir(join(__dirname, "../instructions"));
 
-type FileName = string
+	console.log("Files: ", files);
 
+	let instructionSet = {
+		main: "",
+		node1: "",
+		node2: "",
+		node3: "",
+		node4: "",
+		node5: "",
+		node6: "",
+		node7: "",
+	};
 
-export async function loadInstructionsFromFiles([]: FileName[]) {
+	await Promise.all(
+		files.map(async (fileName) => {
+			let cleanName = fileName.replace("_", "");
+			cleanName = cleanName.split(".")[0];
 
-	readFile("../instructions", (err, data) => {
-		
-	} );
+			if (Object.hasOwn(instructionSet, cleanName)) {
+				instructionSet[cleanName as keyof typeof instructionSet] =
+					await readFile(
+						join(__dirname, "../instructions/" + fileName),
+						"utf-8",
+					);
+			}
+		}),
+	);
+	
+	if(Object.values(instructionSet).some(val => val === null || val === undefined || val === "")) {
+		throw new Error("Error loading instructions")
+	}
 
+	return instructionSet
 }
+
