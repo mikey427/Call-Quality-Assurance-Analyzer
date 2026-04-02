@@ -3,19 +3,17 @@ import cors from "cors";
 import { agent } from "./lib/ai/graph";
 import { HumanMessage } from "@langchain/core/messages";
 import busboy from "busboy";
-import { createWriteStream, WriteStream } from "fs";
-import path from "path";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { getPresignedUrl, uploadFile } from "./lib/cloudflare/client";
+import { createNewAnalysis } from "./lib/db/db";
 
 const app = express();
 app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(express.json());
 const port = 3001;
 
-app.all('/api/auth/{*any}', toNodeHandler(auth));
+app.all("/api/auth/{*any}", toNodeHandler(auth));
 
 app.get("/", (req: Request, res: Response) => {
 	res.send("Hello World!");
@@ -29,7 +27,14 @@ app.post("/analyze", async (req, res) => {
 	res.json({ messages: result.messages });
 });
 
-app.post("/upload", (req, res) => {
+app.post("/upload", async (req, res) => {
+	const session = await auth.api.getSession({
+		headers: req.headers as HeadersInit,
+	});
+	if (!session) return res.status(401).json({ message: "Unauthorized" });
+
+	const userId = session.user.id;
+
 	const bb = busboy({
 		headers: req.headers,
 		limits: { fileSize: 10 * 1024 * 1024 },
@@ -40,41 +45,33 @@ app.post("/upload", (req, res) => {
 
 		if (info.mimeType !== "audio/mpeg" && info.mimeType !== "audio/wav") {
 			stream.resume();
-			return res.json({ success: false, reason: "Incorrect file type. (MP3, WAV)" });
+			return res.json({
+				success: false,
+				reason: "Incorrect file type. (MP3, WAV)",
+			});
 		}
 
 		try {
-			const fileName = await uploadFile(stream, name)
+			const fileName = await uploadFile(stream, name);
 
-			if(!fileName) {
-				res.status(500)
+			if (!fileName) {
+				res.status(500).json("Error uploading file to CloudFlare");
+				return
 			}
 
-			const presignedUrl = getPresignedUrl(fileName);
+			// const presignedUrl = await getPresignedUrl(fileName);
 
+			const newCallRecord = await createNewAnalysis(userId, fileName);
+
+			if(!newCallRecord) {
+				res.status(500).json("Error creating database record");
+				return
+			}
 			
-
+			res.status(201).json({id: newCallRecord.id})
 		} catch (error) {
-			res.status(500).json({message: "File upload failed"})
+			res.status(500).json({ message: "File upload failed" });
 		}
-		
-
-		// const url = getPresignedUrl(name);
-
-
-
-
-		// const writeStream = createWriteStream(saveTo);
-
-		// writeStream.on("error", () => {
-		// 	res.status(500).json({ success: false, reason: "Failed to save file" });
-		// });
-
-		// writeStream.on("finish", () => {
-		// 	res.json({ success: true });
-		// });
-
-		stream.pipe(writeStream);
 	});
 
 	bb.on("error", () => {

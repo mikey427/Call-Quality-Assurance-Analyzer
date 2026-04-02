@@ -77,7 +77,7 @@ export const verification = pgTable(
 export const call = pgTable(
   "call",
   {
-    id: text("id").primaryKey(),
+    id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
