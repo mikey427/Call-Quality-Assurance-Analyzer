@@ -6,6 +6,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { randomUUID } from "crypto";
+import { Readable } from 'stream';
 
 // TODO:
 // Restricting Content-Type: Specify the allowed Content-Type in your SDK's parameters. The signature will include this header, so uploads will fail with a 403/SignatureDoesNotMatch error if the client sends a different Content-Type for an upload request.
@@ -22,23 +23,23 @@ const s3 = new S3Client({
 	},
 });
 
-export async function uploadFile(file: File) {
+export async function uploadFile(file: Readable, fileName: string) {
 	const uuid = randomUUID();
 
 	const date = Date.now().toString();
 
 	// TODO: Update this to include userId & UUID
-	const fileName = `${uuid}_${date}.${file.name.split(".").pop()}`;
+	const fileUploadName = `${uuid}_${date}.${fileName.split(".").pop()}`;
 
 	await s3.send(
 		new PutObjectCommand({
 			Bucket: "atsi-analyzer",
 			Key: fileName,
-			Body: Buffer.from(await file.arrayBuffer()),
+			Body: file
 		}),
 	);
 
-	return fileName;
+	return fileUploadName;
 }
 
 export async function getPresignedUrl(fileName: string) {

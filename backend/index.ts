@@ -7,6 +7,8 @@ import { createWriteStream, WriteStream } from "fs";
 import path from "path";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { getPresignedUrl, uploadFile } from "./lib/cloudflare/client";
 
 const app = express();
 app.use(cors({ origin: "http://localhost:5173", credentials: true }));
@@ -33,23 +35,44 @@ app.post("/upload", (req, res) => {
 		limits: { fileSize: 10 * 1024 * 1024 },
 	});
 
-	bb.on("file", (name, stream, info) => {
-		const saveTo = path.join("uploads", path.basename(info.filename || "upload"));
+	bb.on("file", async (name, stream, info) => {
+		// const saveTo = path.join("uploads", path.basename(info.filename || "upload"));
 
 		if (info.mimeType !== "audio/mpeg" && info.mimeType !== "audio/wav") {
 			stream.resume();
 			return res.json({ success: false, reason: "Incorrect file type. (MP3, WAV)" });
 		}
 
-		const writeStream = createWriteStream(saveTo);
+		try {
+			const fileName = await uploadFile(stream, name)
 
-		writeStream.on("error", () => {
-			res.status(500).json({ success: false, reason: "Failed to save file" });
-		});
+			if(!fileName) {
+				res.status(500)
+			}
 
-		writeStream.on("finish", () => {
-			res.json({ success: true });
-		});
+			const presignedUrl = getPresignedUrl(fileName);
+
+			
+
+		} catch (error) {
+			res.status(500).json({message: "File upload failed"})
+		}
+		
+
+		// const url = getPresignedUrl(name);
+
+
+
+
+		// const writeStream = createWriteStream(saveTo);
+
+		// writeStream.on("error", () => {
+		// 	res.status(500).json({ success: false, reason: "Failed to save file" });
+		// });
+
+		// writeStream.on("finish", () => {
+		// 	res.json({ success: true });
+		// });
 
 		stream.pipe(writeStream);
 	});

@@ -1,4 +1,5 @@
 import { relations } from "drizzle-orm";
+import { json } from "drizzle-orm/pg-core";
 import { pgTable, text, timestamp, boolean, index } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
@@ -73,9 +74,25 @@ export const verification = pgTable(
   (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
 
+export const call = pgTable(
+  "call",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    status: text("status").notNull(),
+    analysisData: json("analysis_data"),
+    s3Key: text("s3_key"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull()
+  }
+)
+
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
+  calls: many(call)
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -91,3 +108,10 @@ export const accountRelations = relations(account, ({ one }) => ({
     references: [user.id],
   }),
 }));
+
+export const callRelations = relations(call, ({ one }) => ({
+  user: one(user, {
+    fields: [call.userId],
+    references: [user.id]
+  })
+}))
