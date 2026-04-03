@@ -1,9 +1,11 @@
 import { SystemMessage } from "@langchain/core/messages";
-import { modelWithTools } from "../model";
+import { model } from "../model.js";
+import { CallAnalysisSchema } from "../graph.js";
 
-function createNode (systemPrompt: string) {
+export function createNode (systemPrompt: string) {
 	return async (state: any) => {
-		const response = await modelWithTools.invoke([
+		const modelWithStructuredOutput = model.withStructuredOutput(CallAnalysisSchema)
+		const response = await modelWithStructuredOutput.invoke([
 			new SystemMessage(systemPrompt),
 			...state.messages,
 		])

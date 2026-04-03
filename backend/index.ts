@@ -1,12 +1,12 @@
 import express, { Request, Response } from "express";
 import cors from "cors";
-import { agent } from "./lib/ai/graph";
+import { agent } from "./lib/ai/graph.js";
 import { HumanMessage } from "@langchain/core/messages";
 import busboy from "busboy";
 import { toNodeHandler } from "better-auth/node";
-import { auth } from "./lib/auth";
-import { getPresignedUrl, uploadFile } from "./lib/cloudflare/client";
-import { createNewAnalysis } from "./lib/db/db";
+import { auth } from "./lib/auth.js";
+import { getPresignedUrl, uploadFile } from "./lib/cloudflare/client.js";
+import { createNewAnalysis } from "./lib/db/db.js";
 
 const app = express();
 app.use(cors({ origin: "http://localhost:5173", credentials: true }));
@@ -19,15 +19,15 @@ app.get("/", (req: Request, res: Response) => {
 	res.send("Hello World!");
 });
 
-app.post("/analyze", async (req, res) => {
-	console.log("hit /analyze");
-	const result = await agent.invoke({
-		messages: [new HumanMessage(req.body.message)],
-	});
-	res.json({ messages: result.messages });
-});
+// app.post("/api/analyze", async (req, res) => {
+// 	console.log("hit /analyze");
+// 	const result = await agent.invoke({
+// 		messages: [new HumanMessage(req.body.message)],
+// 	});
+// 	res.json({ messages: result.messages });
+// });
 
-app.post("/upload", async (req, res) => {
+app.post("/api/analyze", async (req, res) => {
 	const session = await auth.api.getSession({
 		headers: req.headers as HeadersInit,
 	});

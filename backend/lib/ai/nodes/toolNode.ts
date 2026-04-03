@@ -1,19 +1,19 @@
-import { AIMessage, ToolMessage } from "@langchain/core/messages";
-import { toolsByName } from "../model";
+// import { AIMessage, ToolMessage } from "@langchain/core/messages";
+// import { toolsByName } from "../model.js";
 
-export const toolNode = async (state) => {
-  const lastMessage = state.messages.at(-1);
+// export const toolNode = async (state) => {
+//   const lastMessage = state.messages.at(-1);
 
-  if (lastMessage == null || !AIMessage.isInstance(lastMessage)) {
-    return { messages: [] };
-  }
+//   if (lastMessage == null || !AIMessage.isInstance(lastMessage)) {
+//     return { messages: [] };
+//   }
 
-  const result: ToolMessage[] = [];
-  for (const toolCall of lastMessage.tool_calls ?? []) {
-    const tool = toolsByName[toolCall.name as keyof typeof toolsByName];
-    const observation = await tool.invoke(toolCall);
-    result.push(observation);
-  }
+//   const result: ToolMessage[] = [];
+//   for (const toolCall of lastMessage.tool_calls ?? []) {
+//     const tool = toolsByName[toolCall.name as keyof typeof toolsByName];
+//     const observation = await tool.invoke(toolCall);
+//     result.push(observation);
+//   }
 
-  return { messages: result };
-};
+//   return { messages: result };
+// };

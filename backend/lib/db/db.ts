@@ -1,5 +1,5 @@
 import { drizzle } from 'drizzle-orm/neon-http';
-import { call } from "./schema"
+import { call } from "./schema.js"
 
 export const db = drizzle(process.env.DATABASE_URL!);
 
