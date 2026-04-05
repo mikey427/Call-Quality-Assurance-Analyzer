@@ -1,5 +1,5 @@
 import { drizzle } from 'drizzle-orm/neon-http';
-import { call } from "./schema.js"
+import { call, user } from "./schema.js"
 import { eq } from 'drizzle-orm';
 
 export const db = drizzle(process.env.DATABASE_URL!);
@@ -23,4 +23,10 @@ export async function updateAnalysisRecord(recordId: string, analysisData?: obje
 	const updatedRecord = await db.update(call).set(updatedData).where(eq(call.id, recordId)).returning();
 
 	return updatedRecord
+}
+
+export async function retrieveUserCallHistory(userId: string) {
+	const historyRecords = await db.select().from(call).where(eq(call.userId, userId))
+
+	return historyRecords
 }

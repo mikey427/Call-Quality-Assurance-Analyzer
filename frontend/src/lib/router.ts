@@ -3,10 +3,12 @@ import Home from '../pages/home.svelte';
 import SignUp from '../pages/SignUp.svelte';
 import Login from '../pages/login.svelte';
 import Analyze from '../pages/analyze.svelte';
+import History from '../pages/history.svelte';
 
 export const { p, navigate, isActive, route } = createRouter({
 	'/': Home,
 	'/sign-up': SignUp,
 	'/login': Login,
-	'/analyze': Analyze
+	'/analyze': Analyze,
+	'/history': History
 });

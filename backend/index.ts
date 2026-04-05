@@ -6,7 +6,7 @@ import busboy from "busboy";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth.js";
 import { uploadFile } from "./lib/cloudflare/client.js";
-import { createNewAnalysis } from "./lib/db/db.js";
+import { createNewAnalysis, retrieveUserCallHistory } from "./lib/db/db.js";
 import { handleCallAnalysis } from "./lib/analysis.js";
 
 const app = express();
@@ -89,6 +89,21 @@ app.post("/api/analyze", async (req, res) => {
 
 	req.pipe(bb);
 });
+
+app.get("/api/history/:id", async (req, res) => {
+	const session = await auth.api.getSession({
+		headers: req.headers as HeadersInit,
+	});
+	if (!session) return res.status(401).json({ message: "Unauthorized" });
+
+	try {
+		const callHistory = await retrieveUserCallHistory(session.user.id);
+
+		res.json(callHistory);
+	} catch (error) {
+		res.status(500).json({success: false, message: "History retrieval failed"})
+	}
+})
 
 app.listen(port, () => {
 	console.log(`Example app listening on port ${port}`);
