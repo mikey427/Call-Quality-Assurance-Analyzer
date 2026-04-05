@@ -23,7 +23,7 @@ const s3 = new S3Client({
 	},
 });
 
-export async function uploadFile(file: Readable, fileName: string) {
+export async function uploadFile(file: Buffer<ArrayBuffer>, fileName: string) {
 	const uuid = randomUUID();
 
 	const date = Date.now().toString();
@@ -34,7 +34,7 @@ export async function uploadFile(file: Readable, fileName: string) {
 	await s3.send(
 		new PutObjectCommand({
 			Bucket: "atsi-analyzer",
-			Key: fileName,
+			Key: fileUploadName,
 			Body: file
 		}),
 	);

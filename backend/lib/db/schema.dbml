@@ -48,7 +48,8 @@ Table call {
   id varchar [primary key]
   user_id varchar [ref: > users.id]
   status varchar
-  data json [note: 'transcript, professionalism, call_flow_management, accuracy_completeness, caller_experience, turn_annotator, final_analysis']
+  analysis_data json [note: 'transcript, professionalism, call_flow_management, accuracy_completeness, caller_experience, turn_annotator, final_analysis']
+  assembly_data json
   s3_key varchar
   created_at timestamp
 }

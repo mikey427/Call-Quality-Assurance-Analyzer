@@ -5,8 +5,9 @@ import { HumanMessage } from "@langchain/core/messages";
 import busboy from "busboy";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth.js";
-import { getPresignedUrl, uploadFile } from "./lib/cloudflare/client.js";
+import { uploadFile } from "./lib/cloudflare/client.js";
 import { createNewAnalysis } from "./lib/db/db.js";
+import { handleCallAnalysis } from "./lib/analysis.js";
 
 const app = express();
 app.use(cors({ origin: "http://localhost:5173", credentials: true }));
@@ -52,23 +53,31 @@ app.post("/api/analyze", async (req, res) => {
 		}
 
 		try {
-			const fileName = await uploadFile(stream, name);
+
+			const chunks = [];
+			for await (const chunk of stream) {
+				chunks.push(Buffer.from(chunk))
+			}
+
+			const file = Buffer.concat(chunks);
+
+			const fileName = await uploadFile(file, name);
 
 			if (!fileName) {
 				res.status(500).json("Error uploading file to CloudFlare");
-				return
+				return;
 			}
-
-			// const presignedUrl = await getPresignedUrl(fileName);
 
 			const newCallRecord = await createNewAnalysis(userId, fileName);
 
-			if(!newCallRecord) {
+			if (!newCallRecord) {
 				res.status(500).json("Error creating database record");
-				return
+				return;
 			}
-			
-			res.status(201).json({id: newCallRecord.id})
+	
+			handleCallAnalysis(newCallRecord.id, fileName).catch(err => console.error("Analysis failed for ", newCallRecord.id, err));
+
+			res.status(201).json({ id: newCallRecord.id });
 		} catch (error) {
 			res.status(500).json({ message: "File upload failed" });
 		}

@@ -83,6 +83,7 @@ export const call = pgTable(
       .references(() => user.id, { onDelete: "cascade" }),
     status: text("status").notNull(),
     analysisData: json("analysis_data"),
+    assemblyData: json("assembly_data"),
     s3Key: text("s3_key"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull()

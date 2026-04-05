@@ -27,6 +27,34 @@
 	const overallScore = Math.round(
 		scorecard.reduce((a, b) => a + b.score, 0) / scorecard.length,
 	);
+
+	async function analyzeCall() {
+		if(!fileName) {
+			console.log("You must upload a file");
+			return
+		}
+
+		const input = document.getElementById("file-input") as HTMLInputElement;
+
+		if(!input || !input?.files || !input?.files[0]) {
+			console.log("You must upload a file")
+			return
+		}
+
+		const form = new FormData;
+
+		form.append("file", input.files[0])
+
+		const res = await fetch('/api/analyze', {
+			method: "POST",
+			// headers: {
+			// 	"Content-Type": "multipart/form-data"
+			// },
+			body: form
+		})
+
+		console.log(res)
+	}
 </script>
 
 <div class="flex bg-zinc-950 text-zinc-200">
@@ -134,6 +162,7 @@
 						</div>
 					{/if}
 					<input
+						id="file-input"
 						type="file"
 						accept=".mp3,.wav,.m4a,.txt"
 						class="absolute inset-0 opacity-0 cursor-pointer"
@@ -148,6 +177,7 @@
 					<button
 						class="px-4 py-2 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
 						disabled={!fileName}
+						onclick={() => analyzeCall()}
 					>
 						Analyze Call
 					</button>

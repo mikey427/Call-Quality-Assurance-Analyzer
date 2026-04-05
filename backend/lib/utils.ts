@@ -5,7 +5,7 @@ import { join } from "node:path";
 export async function loadInstructionsFromFiles() {
 	const files = await readdir(join(__dirname, "../instructions"));
 
-	console.log("Files: ", files);
+	// console.log("Files: ", files);
 
 	let instructionSet = {
 		main: "",
@@ -20,7 +20,7 @@ export async function loadInstructionsFromFiles() {
 
 	await Promise.all(
 		files.map(async (fileName) => {
-			let cleanName = fileName.replace("_", "");
+			let cleanName = fileName.replaceAll("_", "");
 			cleanName = cleanName.split(".")[0];
 
 			if (Object.hasOwn(instructionSet, cleanName)) {
