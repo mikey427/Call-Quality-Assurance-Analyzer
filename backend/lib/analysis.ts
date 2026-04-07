@@ -2,7 +2,7 @@ import { getPresignedUrl } from "./cloudflare/client.js";
 import { createNewAnalysis, updateAnalysisRecord } from "./db/db.js";
 import { transcribeFile } from "./assemblyai/client.js";
 import { agent } from "./ai/graph.js";
-
+import type { Transcript } from 'assemblyai'
 
 
 export async function handleCallAnalysis(
@@ -29,10 +29,31 @@ export async function handleCallAnalysis(
 		return `[${speaker}]\n${utterance.text}`;
 	}).join("\n\n");
 
+
 	const result = await agent.invoke({ transcript });
 	console.log("result: ", result)
 
-	const newCallRecord = await updateAnalysisRecord(recordId, result, assemblyTranscript, "analysis_complete");
+	const cleanedUpAssemblyAiData = cleanUpAssemblyAiData(assemblyTranscript);
+
+	const newCallRecord = await updateAnalysisRecord(recordId, result, cleanedUpAssemblyAiData, "analysis_complete");
 
 	return newCallRecord
+}
+
+function cleanUpAssemblyAiData(data: Transcript) {
+	return {
+		id: data.id,
+		language_code: data.language_code,
+		status: data.status,
+		text: data.text,
+		utterances: data.utterances?.map(utterance => ({
+			speaker: utterance.speaker,
+			text: utterance.text,
+			confidence: utterance.confidence,
+			start: utterance.start,
+			end: utterance.end,
+		})),
+		confidence: data.confidence,
+		speech_model_used: data.speech_model_used
+	}
 }
